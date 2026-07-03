@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>PhysAgent: Reflective Agentic Physics Control for Physically Plausible Video Generation</title>
+  <style>
+    :root {
+      --ink: #20242a;
+      --muted: #626c75;
+      --line: #d8dee5;
+      --paper: #fcfcfb;
+      --panel: #ffffff;
+      --accent: #15616d;
+      --accent-2: #8a4f2d;
+      --soft: #eef4f2;
+      --shadow: 0 14px 38px rgba(24, 29, 36, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(216, 222, 229, 0.9);
+      background: rgba(252, 252, 251, 0.94);
+      backdrop-filter: blur(12px);
+    }
+
+    .top-nav div {
+      max-width: 1680px;
+      margin: 0 auto;
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      padding: 12px 24px;
+      white-space: nowrap;
+    }
+
+    .top-nav a {
+      color: var(--muted);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .top-nav a:hover { color: var(--accent); }
+
+    .hero {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 78px 32px 38px;
+      text-align: center;
+    }
+
+    .venue {
+      margin: 0 0 10px;
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 1280px;
+      margin: 0 auto 16px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(34px, 5.2vw, 64px);
+      line-height: 1.12;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 980px;
+      margin: 0 auto 14px;
+      color: #3f474f;
+      font-size: 22px;
+    }
+
+    .authors {
+      margin: 0 auto 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .link-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill-link, .seg-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 9px 15px;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .pill-link:hover, .seg-button:hover, .seg-button.is-active {
+      border-color: var(--accent);
+      background: var(--soft);
+      color: var(--accent);
+    }
+
+    .page-section {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 46px 32px;
+    }
+
+    .section-intro {
+      max-width: 850px;
+      margin: 0 auto 24px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 8px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 36px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .section-intro p, .caption {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .caption {
+      max-width: 760px;
+      margin: 14px auto 0;
+      text-align: center;
+    }
+
+    .feature-video,
+    .method-figure,
+    .case-block,
+    .comparison-case {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    video, img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #111;
+    }
+
+    .feature-video video { aspect-ratio: 16 / 9; object-fit: contain; }
+
+    .interactive-section {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .selector-strip {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      width: max-content;
+      max-width: 100%;
+      margin: 8px auto 26px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-gutter: stable;
+      padding: 4px 2px 10px;
+    }
+
+    .case-thumb {
+      width: 120px;
+      aspect-ratio: 4 / 3;
+      flex: 0 0 auto;
+      border: 3px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      scroll-snap-align: start;
+    }
+
+    .case-thumb:hover,
+    .case-thumb.is-active {
+      border-color: #10c7b5;
+    }
+
+    .case-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    .selectable-case-panel {
+      display: none;
+    }
+
+    .selectable-case-panel.is-active {
+      display: block;
+    }
+
+    .round-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .round-panel h3,
+    .more-panel h3 {
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .case-prompt,
+    .comparison-prompt {
+      max-width: 1200px;
+      margin: 0 auto 18px;
+      text-align: left;
+      border: 1px solid #dfe6e8;
+      border-radius: 8px;
+      background: #f8faf9;
+      padding: 13px 16px;
+    }
+
+    .comparison-prompt {
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+
+    .event-prompt {
+      border-top: 1px solid var(--line);
+      background: #fbfcfb;
+      padding: 12px 14px;
+    }
+
+    .prompt-text {
+      margin: 0;
+      color: #27323a;
+      font-size: 15px;
+      line-height: 1.58;
+      font-weight: 450;
+    }
+
+    .case-prompt .prompt-text,
+    .comparison-prompt .prompt-text {
+      font-size: 16px;
+    }
+
+    .prompt-highlight {
+      border-radius: 4px;
+      background: #fff1a8;
+      color: #20242a;
+      padding: 0 3px;
+      font-weight: 750;
+    }
+
+    .more-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .case-list, .comparison-list {
+      display: grid;
+      gap: 24px;
+    }
+
+    .case-block, .comparison-case { padding: 18px; }
+
+    .case-header,
+    .comparison-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    h3 {
+      margin-bottom: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .case-input {
+      max-width: 520px;
+      margin: 0 auto 16px;
+    }
+
+    .iteration-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .iteration-flow {
+      display: grid;
+      gap: 16px;
+    }
+
+    .iteration-video-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .reflection-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .reflection-card-1 {
+      grid-column: 1 / 3;
+    }
+
+    .reflection-card-2 {
+      grid-column: 3 / 5;
+    }
+
+    .round-video-card video {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .reflection-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid #b8dfd8;
+      border-radius: 8px;
+      background: #f0faf7;
+      color: #263239;
+      padding: 16px;
+      transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    }
+
+    .reflection-card.is-highlighted {
+      border-color: #10c7b5;
+      background: #e5fffb;
+      box-shadow: 0 0 0 4px rgba(16, 199, 181, 0.18), 0 14px 32px rgba(16, 199, 181, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .reflection-card::before,
+    .reflection-card::after {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      width: 0;
+      height: 0;
+      transform: translateX(-50%);
+    }
+
+    .reflection-card::before {
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid #b8dfd8;
+    }
+
+    .reflection-card::after {
+      top: -8px;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid #f0faf7;
+    }
+
+    .reflection-title {
+      margin-bottom: 8px;
+      color: #0d7167;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .reflection-card p {
+      margin-bottom: 0;
+      color: #39464d;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.35fr 1.35fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .media-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .media-label {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: #364048;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .media-card video, .media-card img {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .input-card img, .compact img { object-fit: contain; background: #f4f6f6; }
+
+    .segmented-control {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .baseline-slot { min-width: 0; }
+
+    .baseline-method { display: none; }
+
+    .baseline-method.is-active { display: block; }
+
+    .method-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 0 auto 16px;
+    }
+
+    .method-row .seg-button {
+      min-width: 150px;
+      border-radius: 4px;
+      padding: 10px 18px;
+      font-weight: 700;
+    }
+
+    .method-row .seg-button.is-active {
+      border-color: #10c7b5;
+      background: #10c7b5;
+      color: #fff;
+    }
+
+    .video-pair {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-radius: 8px;
+      background: #111;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .video-pair::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      z-index: 2;
+      width: 4px;
+      background: rgba(0, 0, 0, 0.75);
+      transform: translateX(-50%);
+    }
+
+    .pair-cell {
+      position: relative;
+      min-width: 0;
+    }
+
+    .pair-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.88);
+      color: #20242a;
+      padding: 5px 9px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pair-cell video,
+    .baseline-method-panel video {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .baseline-method-panel {
+      display: none;
+    }
+
+    .baseline-method-panel.is-active {
+      display: block;
+    }
+
+    .text-section {
+      max-width: 1040px;
+    }
+
+    .prose {
+      color: #333b43;
+      font-size: 17px;
+    }
+
+    .method-figure img {
+      max-height: 720px;
+      object-fit: contain;
+      background: #f4f6f6;
+    }
+
+    .method-pdf {
+      display: block;
+      width: 100%;
+      height: min(760px, 82vh);
+      border: 0;
+      background: #f4f6f6;
+    }
+
+    .asset-placeholder {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #aab4bd;
+      border-radius: 8px;
+      background: #f4f6f6;
+      color: #6f7881;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 26px 24px 54px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .iteration-grid, .comparison-grid, .gallery-grid, .event-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .iteration-flow {
+        gap: 14px;
+      }
+
+      .iteration-video-row,
+      .reflection-row {
+        grid-template-columns: 1fr;
+      }
+
+      .reflection-card-1,
+      .reflection-card-2 {
+        grid-column: auto;
+      }
+
+      .reflection-card::before,
+      .reflection-card::after {
+        display: none;
+      }
+
+      .comparison-grid .compact { grid-column: span 2; }
+      .video-pair { grid-template-columns: 1fr; }
+      .video-pair::before { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding-top: 48px; }
+      h1 { font-size: 30px; }
+      h2 { font-size: 28px; }
+      .subtitle { font-size: 17px; }
+      .page-section { padding: 34px 16px; }
+      .case-header, .comparison-title { align-items: flex-start; flex-direction: column; }
+      .iteration-grid, .comparison-grid, .gallery-grid, .event-grid { grid-template-columns: 1fr; }
+      .comparison-grid .compact { grid-column: auto; }
+      .case-thumb { width: 96px; }
+      .method-row .seg-button { min-width: 0; flex: 1 1 130px; }
+      .top-nav div { padding-inline: 16px; }
+    }
+    </style>
+</head>
+<body>
+  <nav class="top-nav"><div><a href="#overview">Overview</a>
+<a href="#iterations">Iterations</a>
+<a href="#baselines">Baselines</a>
+<a href="#more-results">More Results</a>
+<a href="#abstract">Abstract</a>
+<a href="#method">Method</a></div></nav>
+
+    <header class="hero">
+      <p class="venue">Project Page</p>
+      <h1>PhysAgent: Reflective Agentic Physics Control for Physically Plausible Video Generation</h1>
+      <p class="subtitle">Reflection-iteration agents for controllable, physically plausible video generation.</p>
+      <p class="authors">Author One · Author Two · Author Three</p>
+      <div class="link-row"><a class="pill-link" href="#">Paper</a>
+<a class="pill-link" href="#">Code</a></div>
+    </header>
+    
+
+    <section id="overview" class="page-section">
+      
+    <div class="section-intro">
+      <h2>Overview</h2>
+      
+    </div>
+    
+      <div class="feature-video">
+        <video src="physagent_demo1.mp4?v=1782463577" poster="chapter1/demo_image.png?v=1782398503" class="" autoplay muted loop playsinline controls preload="metadata"></video>
+      </div>
+      
+    </section>
+    
+
+    <section id="iterations" class="page-section">
+      
+    <div class="section-intro">
+      <h2>Multi-Round Iterative Generation</h2>
+      
+    </div>
+    
+      <div class="interactive-section">
+        <div class="selector-strip">
+            <button class="case-thumb is-active" data-target="iterations" data-case="0" type="button" aria-label="Select Ball (case_003)">
+              <img src="matched_images/chapter2_ball_case_003.png?v=1780559796" alt="Ball (case_003)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="iterations" data-case="1" type="button" aria-label="Select Bowling (case_015)">
+              <img src="matched_images/chapter2_bowling_case_015.png?v=1779952366" alt="Bowling (case_015)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="iterations" data-case="2" type="button" aria-label="Select Curling (case_023)">
+              <img src="matched_images/chapter2_curling_case_023.png?v=1780559796" alt="Curling (case_023)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="iterations" data-case="3" type="button" aria-label="Select Nailong (case_041)">
+              <img src="matched_images/chapter2_nailong_case_041.png?v=1780559798" alt="Nailong (case_041)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="iterations" data-case="4" type="button" aria-label="Select Rocket (case_028)">
+              <img src="matched_images/chapter2_rocket_case_028.png?v=1781846999" alt="Rocket (case_028)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="iterations" data-case="5" type="button" aria-label="Select Snow (case_074)">
+              <img src="matched_images/chapter2_snow_case_074.png?v=1779952366" alt="Snow (case_074)" loading="lazy" class="thumb-image">
+            </button>
+            </div>
+        
+    <article class="selectable-case-panel round-panel is-active" data-target="iterations" data-case="0">
+      <div class="case-prompt"><p class="prompt-text">A small red ball rolls down from the higher step on the right and <mark class="prompt-highlight">lands in the paper cup</mark> below; the impact then makes the cup <mark class="prompt-highlight">lose balance and tip over</mark>.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case1_iter1.mp4?v=1782455169" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case1_iter2.mp4?v=1782455170" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="processed_videos/chapter2_case1_iter3.mp4?v=1782455170" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>Speed of the red ball should be faster to fall into the cup.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>The red ball should be heavier to knock down the cup, and increase the speed a littlt bit.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+
+    <article class="selectable-case-panel round-panel" data-target="iterations" data-case="1">
+      <div class="case-prompt"><p class="prompt-text">A bowling ball curves to the <mark class="prompt-highlight">right</mark> along the lane, <mark class="prompt-highlight">hits</mark> only the <mark class="prompt-highlight">right-side pin</mark>, knocks that pin down, and leaves the other pins standing.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case2_iter1.mp4?v=1782455170" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case2_iter2.mp4?v=1782455171" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="processed_videos/chapter2_case2_iter3.mp4?v=1782455171" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>The bowling ball&#x27;s velocity direction should be adjusted further to the right.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>The bowling ball&#x27;s velocity is now deviating too far to the right, so it should be adjusted slightly back to the left.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+
+    <article class="selectable-case-panel round-panel" data-target="iterations" data-case="2">
+      <div class="case-prompt"><p class="prompt-text">A red curling stone <mark class="prompt-highlight">slides</mark> from behind toward a yellow stone at the target, <mark class="prompt-highlight">hits</mark> it, <mark class="prompt-highlight">pushes</mark> it away from its original position, and finally <mark class="prompt-highlight">stops near the center</mark> of the target.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case3_iter1.mp4?v=1782455171" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case3_iter2.mp4?v=1782455171" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="processed_videos/chapter2_case3_iter3.mp4?v=1782455172" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>The red curling stone&#x27;s velocity direction should point straight toward the yellow stone.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>The red curling stone should move faster, and its mass should be slightly increased.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+
+    <article class="selectable-case-panel round-panel" data-target="iterations" data-case="3">
+      <div class="case-prompt"><p class="prompt-text">A yellow toy stands on a wooden table; a blue ring <mark class="prompt-highlight">descends</mark> from above but does not fully loop around it, instead getting half caught on the toy body and stopping at an angle.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case4_iter1.mp4?v=1782810527" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case4_iter2.mp4?v=1782810543" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="processed_videos/chapter2_case4_iter3.mp4?v=1782810560" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>Increase the ring&#x27;s initial downward velocity.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>Slightly reduce the initial velocity to avoid overshooting the desired contact state.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+
+    <article class="selectable-case-panel round-panel" data-target="iterations" data-case="4">
+      <div class="case-prompt"><p class="prompt-text">A small rocket <mark class="prompt-highlight">launches</mark> from the grass, first flies upward to the right, then gradually <mark class="prompt-highlight">curves left</mark>, forming a <mark class="prompt-highlight">C-shaped arc</mark>.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case5_iter1.mp4?v=1782810578" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case5_iter2.mp4?v=1782810595" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="processed_videos/chapter2_case5_iter3.mp4?v=1782810612" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>The rocket thrust should be stronger and last longer.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>The steering force should be applied slightly earlier.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+
+    <article class="selectable-case-panel round-panel" data-target="iterations" data-case="5">
+      <div class="case-prompt"><p class="prompt-text">A snowball flies in an arc toward a wooden fence, <mark class="prompt-highlight">hits</mark> the fence. Some of it <mark class="prompt-highlight">breaks into powder</mark>, and <mark class="prompt-highlight">bounces back</mark> outward.</p></div>
+      <div class="iteration-flow">
+        <div class="iteration-video-row">
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 1</div>
+              <video src="processed_videos/chapter2_case6_iter2.mp4?v=1782457849" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 2</div>
+              <video src="processed_videos/chapter2_case6_iter1.mp4?v=1782455174" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            
+            <article class="media-card round-video-card">
+              <div class="media-label">Iteration 3</div>
+              <video src="chapter2_case6_iter3.mp4?v=1782459277" class="round-sequence-video" muted playsinline controls preload="metadata"></video>
+            </article>
+            </div>
+        <div class="reflection-row">
+            <article class="reflection-card reflection-card-1">
+              <div class="reflection-title">Reflection 1 to 2</div>
+              <p>The snowball collider should be fixed during the early stage to prevent it from breaking apart in flight.</p>
+            </article>
+            
+            <article class="reflection-card reflection-card-2">
+              <div class="reflection-title">Reflection 2 to 3</div>
+              <p>The snowball needs a higher initial velocity.</p>
+            </article>
+            </div>
+      </div>
+    </article>
+    
+      </div>
+    </section>
+    
+
+    <section id="baselines" class="page-section">
+      
+    <div class="section-intro">
+      <h2>Comparisons with Baselines</h2>
+      
+    </div>
+    
+      <div class="interactive-section">
+        <div class="selector-strip">
+            <button class="case-thumb is-active" data-target="baselines" data-case="0" type="button" aria-label="Select Bird (case_009)">
+              <img src="matched_images/chapter3_bird_case_009.png?v=1781846999" alt="Bird (case_009)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="1" type="button" aria-label="Select Car (case_064)">
+              <img src="matched_images/chapter3_car_case_064.png?v=1779952367" alt="Car (case_064)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="2" type="button" aria-label="Select Knife (case_039)">
+              <img src="matched_images/chapter3_knife_case_039.png?v=1779952366" alt="Knife (case_039)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="3" type="button" aria-label="Select Orange (case_059)">
+              <img src="matched_images/chapter3_orange_case_059.png?v=1779952367" alt="Orange (case_059)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="4" type="button" aria-label="Select Pumpkin (case_047)">
+              <img src="matched_images/chapter3_pumpkin_case_047.png?v=1779952366" alt="Pumpkin (case_047)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="5" type="button" aria-label="Select Scooter (case_049)">
+              <img src="matched_images/chapter3_scotter_case_049.png?v=1779952366" alt="Scooter (case_049)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="6" type="button" aria-label="Select Snake (case_068)">
+              <img src="matched_images/chapter3_snake_case_068.png?v=1781847000" alt="Snake (case_068)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="baselines" data-case="7" type="button" aria-label="Select Snowman (case_070)">
+              <img src="matched_images/chapter3_snowman_case_070.png?v=1781847000" alt="Snowman (case_070)" loading="lazy" class="thumb-image">
+            </button>
+            </div>
+        
+    <article class="selectable-case-panel comparison-panel is-active" data-target="baselines" data-case="0">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case1_ours.mp4?v=1782455175" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case1_baseline3.mp4?v=1782455175" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case1_baseline1.mp4?v=1782455174" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case1_baseline2.mp4?v=1782455175" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">In a side-scrolling pipe game scene, a small bird flies to the right while <mark class="prompt-highlight">bobbing up and down</mark> to adjust its height, <mark class="prompt-highlight">passing through</mark> the gap between each pair of vertical pipes in sequence.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="1">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case2_ours.mp4?v=1782455176" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case2_baseline3.mp4?v=1782455176" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case2_baseline1.mp4?v=1782455175" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case2_baseline2.mp4?v=1782455176" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">A red toy car <mark class="prompt-highlight">drifts sideways</mark> while descending the transparent ramp and the car <mark class="prompt-highlight">tips over onto its side</mark> on the tabletop.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="2">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case4_ours.mp4?v=1782455178" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case4_baseline3.mp4?v=1782455177" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case4_baseline1.mp4?v=1782455177" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case4_baseline2.mp4?v=1782455177" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">A knife is thrown above a wooden cutting board, flies forward while flipping in the air, and finally <mark class="prompt-highlight">lands</mark> near the board.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="3">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case5_ours.mp4?v=1782464302" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case5_baseline3.mp4?v=1782455178" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case5_baseline1.mp4?v=1782455178" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case5_baseline2.mp4?v=1782455178" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">Two oranges <mark class="prompt-highlight">slide</mark> off the end of a conveyor belt, <mark class="prompt-highlight">fall</mark> to the floor, <mark class="prompt-highlight">collide</mark> with a third orange that was resting below, and <mark class="prompt-highlight">push</mark> it forward.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="4">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case6_ours.mp4?v=1782455180" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case6_baseline3.mp4?v=1782455179" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case6_baseline1.mp4?v=1782455179" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case6_baseline2.mp4?v=1782455179" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">A huge pumpkin hangs directly above a small wooden stool, <mark class="prompt-highlight">falls</mark> vertically, <mark class="prompt-highlight">lands</mark> heavily on it, and <mark class="prompt-highlight">crushes</mark> the stool.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="5">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case7_ours.mp4?v=1782455181" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case7_baseline3.mp4?v=1782455180" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case7_baseline1.mp4?v=1782455180" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case7_baseline2.mp4?v=1782455180" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">A scooter rolls across the ground toward a trash can, <mark class="prompt-highlight">hits</mark> it, loses balance and <mark class="prompt-highlight">falls</mark> over, while the trash can is also <mark class="prompt-highlight">knocked down</mark>.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="6">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case8_ours.mp4?v=1782455181" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case8_baseline3.mp4?v=1782812012" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case8_baseline1.mp4?v=1782812014" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case8_baseline2.mp4?v=1782812015" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">In a snake game, the snake first moves to the right to <mark class="prompt-highlight">eat</mark> a piece of food, then <mark class="prompt-highlight">turns downward</mark> and continues moving.</p></div>
+    </article>
+    
+
+    <article class="selectable-case-panel comparison-panel" data-target="baselines" data-case="7">
+      <div class="method-row"><button class="seg-button is-active" data-method="0" type="button">vs Wan 2.2</button><button class="seg-button" data-method="1" type="button">vs Goal Force</button><button class="seg-button" data-method="2" type="button">vs RealWonder</button></div>
+      <div class="video-pair">
+        <div class="pair-cell">
+          <div class="pair-label">Ours</div>
+          <video src="processed_videos/chapter3_case9_baseline1.mp4?v=1782455181" class="" muted loop playsinline controls preload="metadata"></video>
+        </div>
+        <div class="pair-cell">
+          <div class="pair-label">Baseline</div>
+          <div class="baseline-slot">
+            <div class="baseline-method-panel is-active" data-method="0">
+              <video src="processed_videos/chapter3_case9_ours.mp4?v=1782455182" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="1">
+              <video src="processed_videos/chapter3_case9_baseline3.mp4?v=1782455182" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            
+            <div class="baseline-method-panel" data-method="2">
+              <video src="processed_videos/chapter3_case9_baseline2.mp4?v=1782455182" class="" muted loop playsinline controls preload="metadata"></video>
+            </div>
+            </div>
+        </div>
+      </div>
+      <div class="comparison-prompt"><p class="prompt-text">A snowman stands in the snow; the hat on its head is <mark class="prompt-highlight">blown off</mark> by the wind and <mark class="prompt-highlight">falls to one side</mark>.</p></div>
+    </article>
+    
+      </div>
+    </section>
+    
+
+    <section id="more-results" class="page-section">
+      
+    <div class="section-intro">
+      <h2>More Results</h2>
+      
+    </div>
+    
+      <div class="interactive-section">
+        <div class="selector-strip">
+            <button class="case-thumb is-active" data-target="more-results" data-case="0" type="button" aria-label="Select Book (case_010)">
+              <img src="matched_images/chapter4_book_case_010.png?v=1779952366" alt="Book (case_010)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="1" type="button" aria-label="Select Cube (case_007)">
+              <img src="matched_images/chapter4_case_078_row_79.png?v=1782471190" alt="Cube (case_007)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="2" type="button" aria-label="Select Ramp (case_062)">
+              <img src="matched_images/chapter4_ramp_case_062.png?v=1779952366" alt="Ramp (case_062)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="3" type="button" aria-label="Select Snake (case_068)">
+              <img src="matched_images/chapter4_snake_case_068.png?v=1781847000" alt="Snake (case_068)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="4" type="button" aria-label="Select Snowman (case_070)">
+              <img src="matched_images/chapter4_snoman_case_070.png?v=1781847000" alt="Snowman (case_070)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="5" type="button" aria-label="Select Umbrella (case_072)">
+              <img src="matched_images/chapter4_umbrella_case_072.png?v=1781847000" alt="Umbrella (case_072)" loading="lazy" class="thumb-image">
+            </button>
+            </div>
+        
+    <article class="selectable-case-panel more-panel is-active" data-target="more-results" data-case="0">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case1_event1.mp4?v=1782455183" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">In a stack of books near the table edge, <mark class="prompt-highlight">the top three books</mark> are <mark class="prompt-highlight">pushed</mark> off the tabletop and <mark class="prompt-highlight">fall</mark>, while <mark class="prompt-highlight">the bottom book remains on the table</mark>.</p></div>
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter4_case1_event2.mp4?v=1782455183" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text"><mark class="prompt-highlight">Only the top book</mark> in the stack is <mark class="prompt-highlight">pushed</mark> sideways; it <mark class="prompt-highlight">slides</mark> off the stack, flips once in the air, and <mark class="prompt-highlight">lands</mark> flat on the floor, while <mark class="prompt-highlight">the remaining books stay upright</mark> in a stack.</p></div>
+            </article>
+            </div>
+    </article>
+    
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="1">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case3_event1.mp4?v=1782455184" class="" muted loop playsinline controls preload="metadata"></video>
+              
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter4_case3_event2.mp4?v=1782455184" class="" muted loop playsinline controls preload="metadata"></video>
+              
+            </article>
+            </div>
+    </article>
+    
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="2">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case4_event1.mp4?v=1782455184" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">After <mark class="prompt-highlight">the support plate beneath the transparent ramp is pulled away</mark>, the white foam block loses support and <mark class="prompt-highlight">falls downward</mark>.</p></div>
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter4_case4_event2.mp4?v=1782455184" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">A white foam block is above a transparent ramp and <mark class="prompt-highlight">gently floats downward through the air</mark>, slowly approaching the ramp surface.</p></div>
+            </article>
+            </div>
+    </article>
+    
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="3">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case5_event1.mp4?v=1782455185" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">In a snake game, the snake first moves to the right, then <mark class="prompt-highlight">turns downward</mark> and continues moving to <mark class="prompt-highlight">eat</mark> the fruit.</p></div>
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter4_case5_event2.mp4?v=1782455185" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">In a snake game, the snake moves through <mark class="prompt-highlight">four successive stages</mark>, changing direction step by step and <mark class="prompt-highlight">eating</mark> the target food.</p></div>
+            </article>
+            </div>
+    </article>
+    
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="4">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case6_event1.mp4?v=1782455185" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">A snowman stands in the snow; <mark class="prompt-highlight">the hat on its head is blown off</mark> by the wind and <mark class="prompt-highlight">falls to one side</mark>.</p></div>
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter3_case9_baseline1.mp4?v=1782455181" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">A snowman is <mark class="prompt-highlight">hit by a sideways wind or force</mark>.</p></div>
+            </article>
+            </div>
+    </article>
+    
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="5">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="processed_videos/chapter4_case8_event1.mp4?v=1782455186" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">An umbrella lies beside an open road; strong wind <mark class="prompt-highlight">lifts it off the ground</mark>, carries it into the air, and makes it drift around.</p></div>
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="processed_videos/chapter4_case8_event2.mp4?v=1782455187" class="" muted loop playsinline controls preload="metadata"></video>
+              <div class="event-prompt"><p class="prompt-text">An umbrella is blown by the wind on an open road; instead of flying high, it <mark class="prompt-highlight">tumbles backward along the road surface</mark>.</p></div>
+            </article>
+            </div>
+    </article>
+    
+      </div>
+    </section>
+    
+
+    <section id="abstract" class="page-section text-section">
+      <div class="section-intro">
+        <h2>Abstract</h2>
+      </div>
+      <div class="prose"><p>Physically plausible video generation remains challenging for current generative models, especially when the user prompts describe fine-grained object dynamics, force interactions, complex trajectories, and temporally structured motion. Existing physics-grounded video generation methods introduce physics engines to provide explicit simulation priors, but they often rely on one-shot vision-language model prediction to configure physical parameters and motion controls. Such a paradigm is fragile due to the strong coupling among simulation parameters, the limited expressiveness of low-level force or collision-based controls, and the lack of feedback mechanisms for realizing complex and precise physical outcomes.</p>
+<p>In this paper, we propose a reflection-iteration agent framework that closes the loop between vision-language model configuration, physics simulation, reflective evaluation, and iterative parameter refinement. Beyond improving the control of coupled physical parameters, our framework enables the agent to progressively realize complex trajectories, multi-stage interactions, and precise event outcomes by treating each physical program as an executable hypothesis. In addition, we design a set of high-level physics-control APIs to support more compositional and complex motion behaviors. Our framework improves prompt alignment, physical plausibility, and generalization in physics-grounded video generation.</p></div>
+    </section>
+    <section id="method" class="page-section">
+      
+    <div class="section-intro">
+      <h2>Method Overview</h2>
+      <p>Starting from an input image and event prompt, the agent infers a physical control program, executes it in simulation, verifies intermediate artifacts, and refines failed factors before using the accepted rollout as a structured motion prior for video synthesis.</p>
+    </div>
+    
+      <div class="method-figure">
+        <img src="pipeline.png?v=1782456838" alt="Method overview" loading="lazy" class="">
+      </div>
+    </section>
+    
+  <script>
+    let roundSequenceToken = 0;
+
+    function visibleVideos(panel) {
+      return Array.from(panel.querySelectorAll("video")).filter((video) => {
+        return video.offsetParent !== null;
+      });
+    }
+
+    function restartVideosTogether(panel) {
+      if (!panel) return;
+      Array.from(panel.querySelectorAll("video")).forEach((video) => {
+        video.pause();
+        try { video.currentTime = 0; } catch (error) {}
+      });
+      const videos = visibleVideos(panel);
+      videos.forEach((video) => {
+        const promise = video.play();
+        if (promise) promise.catch(() => {});
+      });
+    }
+
+    function setupVideoSync(panel) {
+      const videos = Array.from(panel.querySelectorAll("video"));
+      let syncing = false;
+      videos.forEach((video) => {
+        video.addEventListener("play", () => {
+          if (syncing || !panel.classList.contains("is-active")) return;
+          syncing = true;
+          visibleVideos(panel).forEach((other) => {
+            if (other === video) return;
+            try { other.currentTime = video.currentTime; } catch (error) {}
+            const promise = other.play();
+            if (promise) promise.catch(() => {});
+          });
+          syncing = false;
+        });
+      });
+    }
+
+    function startRoundSequence(panel) {
+      if (!panel) return;
+      const token = ++roundSequenceToken;
+      const videos = Array.from(panel.querySelectorAll(".round-sequence-video"));
+      const reflections = Array.from(panel.querySelectorAll(".reflection-card"));
+      videos.forEach((video) => {
+        video.pause();
+        video.loop = false;
+        try { video.currentTime = 0; } catch (error) {}
+      });
+      reflections.forEach((card) => card.classList.remove("is-highlighted"));
+
+      const playVideo = (index) => {
+        if (token !== roundSequenceToken || !panel.classList.contains("is-active") || index >= videos.length) return;
+        const video = videos[index];
+        try { video.currentTime = 0; } catch (error) {}
+        const promise = video.play();
+        if (promise) promise.catch(() => {});
+        video.onended = () => {
+          if (token !== roundSequenceToken || !panel.classList.contains("is-active")) return;
+          if (index < reflections.length) {
+            const card = reflections[index];
+            card.classList.add("is-highlighted");
+            window.setTimeout(() => {
+              if (token !== roundSequenceToken || !panel.classList.contains("is-active")) return;
+              card.classList.remove("is-highlighted");
+              playVideo(index + 1);
+            }, 1600);
+          }
+        };
+      };
+
+      playVideo(0);
+    }
+
+    document.querySelectorAll(".case-thumb").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.target;
+        const caseId = button.dataset.case;
+        document.querySelectorAll(`.case-thumb[data-target="${target}"]`).forEach((item) => {
+          item.classList.toggle("is-active", item.dataset.case === caseId);
+        });
+        document.querySelectorAll(`.selectable-case-panel[data-target="${target}"]`).forEach((panel) => {
+          panel.classList.toggle("is-active", panel.dataset.case === caseId);
+          if (!panel.classList.contains("is-active")) {
+            panel.querySelectorAll("video").forEach((video) => video.pause());
+          }
+        });
+        const activePanel = document.querySelector(`.selectable-case-panel.is-active[data-target="${target}"]`);
+        if (target === "iterations") {
+          startRoundSequence(activePanel);
+        } else if (target === "baselines" || target === "more-results") {
+          restartVideosTogether(activePanel);
+        }
+      });
+    });
+
+    document.querySelectorAll(".comparison-panel, .more-panel").forEach(setupVideoSync);
+
+    document.querySelectorAll(".method-row .seg-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const panel = button.closest(".comparison-panel");
+        const methodId = button.dataset.method;
+        panel.querySelectorAll(".seg-button").forEach((item) => {
+          item.classList.toggle("is-active", item.dataset.method === methodId);
+        });
+        panel.querySelectorAll(".baseline-method-panel").forEach((item) => {
+          item.classList.toggle("is-active", item.dataset.method === methodId);
+        });
+        restartVideosTogether(panel);
+      });
+    });
+
+    window.addEventListener("load", () => {
+      startRoundSequence(document.querySelector('.round-panel.is-active[data-target="iterations"]'));
+    });
+    </script>
+</body>
+</html>
