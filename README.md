@@ -1,8 +1,33 @@
-# RealWonder Single-Case Pipeline
+# PhysAgent: Reflective Agentic Physics Control for Physically Plausible Video Generation
 
-This is a cleaned single-case release folder extracted from the larger RealWonder
-workspace. It keeps the multi-agent generation loop and simulation code while
-excluding benchmark outputs, historical result folders, and heavy model files.
+## About
+
+PhysAgent is a reflective agent framework for physics-grounded video generation.
+It targets prompts with fine-grained object dynamics, force interactions,
+complex trajectories, and temporally structured events, where one-shot
+vision-language model prediction is often too brittle to configure coupled
+simulation parameters correctly.
+
+Instead of treating a physical program as a fixed prediction, PhysAgent treats it
+as an executable hypothesis. The agent closes the loop between vision-language
+configuration, physics simulation, reflective evaluation, and iterative
+parameter refinement, progressively improving prompt alignment, physical
+plausibility, and event-level control.
+
+A single reflective agent alternates among four roles:
+
+- **Generator** - Produces simulation configs and high-level physics-control
+  programs from an input image and prompt.
+- **Simulator** - Executes reconstruction and physics simulation to render the
+  proposed motion outcome.
+- **Evaluator** - Checks masks, reconstruction artifacts, and simulated videos
+  against the prompt and expected physical behavior.
+- **Reflector** - Diagnoses failures and revises the physical program for the
+  next iteration.
+
+This repository contains a cleaned single-case PhysAgent pipeline. It keeps the
+multi-agent generation loop and simulation code while excluding benchmark
+outputs, historical result folders, and heavy model files.
 
 ## What is included
 
