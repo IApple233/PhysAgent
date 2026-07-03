@@ -1,0 +1,173 @@
+# RealWonder Single-Case Pipeline
+
+This is a cleaned single-case release folder extracted from the larger RealWonder
+workspace. It keeps the multi-agent generation loop and simulation code while
+excluding benchmark outputs, historical result folders, and heavy model files.
+
+## What is included
+
+- `run_single.py`: one entry point for both generation and simulation.
+- `cases/multiagent_loop.py`: multi-agent config/handler generation and refinement.
+- `cases/caption_force.py`: shared DashScope/VLM generation utilities.
+- `cases/*_rule.md`: generation, evaluation, and reflection prompts.
+- `case_simulation.py` and `simulation/`: reconstruction and simulation runtime.
+- `vidgen/`, `wan/`, and `submodules/flux_controlnet_inpainting/`: lightweight code dependencies used by the runtime.
+
+Large external dependencies such as SAM2, SAM3D Objects, Genesis, checkpoints,
+and model weights are intentionally not copied into this folder. Install or link
+them following the original project environment before running the full pipeline.
+
+## Installation
+
+The environment follows the original RealWonder repository. The tested setup is
+CUDA 12.1 with the `realwonder` conda environment from `default.yml`.
+
+### 1. Create Environment
+
+```bash
+conda env create -f default.yml
+conda activate realwonder
+```
+
+### 2. Prepare External Submodules
+
+This release folder keeps only the lightweight
+`submodules/flux_controlnet_inpainting` code. Clone or symlink the other
+external repositories into these exact paths:
+
+```bash
+mkdir -p submodules
+git clone https://github.com/facebookresearch/sam-3d-objects.git submodules/sam_3d_objects
+git clone https://github.com/facebookresearch/sam2.git submodules/sam2
+git clone https://github.com/Genesis-Embodied-AI/Genesis.git submodules/Genesis
+```
+
+If you are working from the full original RealWonder checkout, symlinks are also
+fine:
+
+```bash
+ln -s /path/to/RealWonder/submodules/sam_3d_objects submodules/sam_3d_objects
+ln -s /path/to/RealWonder/submodules/sam2 submodules/sam2
+ln -s /path/to/RealWonder/submodules/Genesis submodules/Genesis
+```
+
+### 3. Install SAM 3D Objects
+
+```bash
+cd submodules/sam_3d_objects
+export PIP_EXTRA_INDEX_URL="https://pypi.ngc.nvidia.com https://download.pytorch.org/whl/cu121"
+pip install -e '.[dev]'
+pip install -e '.[p3d]'
+export PIP_FIND_LINKS="https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu121.html"
+pip install -e '.[inference]'
+./patching/hydra
+cd ../..
+```
+
+Download SAM 3D Objects checkpoints:
+
+```bash
+pip install 'huggingface-hub[cli]<1.0'
+TAG=hf
+hf download --repo-type model --local-dir checkpoints/${TAG}-download --max-workers 1 facebook/sam-3d-objects
+mv checkpoints/${TAG}-download/checkpoints checkpoints/${TAG}
+rm -rf checkpoints/${TAG}-download
+```
+
+### 4. Install SAM 2
+
+```bash
+cd submodules/sam2
+pip install -e .
+cd checkpoints && ./download_ckpts.sh && cd ..
+cd ../..
+```
+
+### 5. Install Genesis
+
+```bash
+cd submodules/Genesis
+git checkout 3aa206cd84729bc7cc14fb4007aeb95a0bead7aa
+pip install -e .
+cd ../..
+```
+
+### 6. Install Other Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 7. Download RealWonder Video Model Checkpoints
+
+These are needed for the final video generation path. The single-case agent and
+short simulation can still be useful before running final video synthesis.
+
+```bash
+hf download ziyc/realwonder --include "Realwonder-Distilled-AR-I2V-Flow/*" --local-dir ckpts/
+hf download alibaba-pai/Wan2.1-Fun-V1.1-1.3B-InP --local-dir wan_models/Wan2.1-Fun-V1.1-1.3B-InP
+```
+
+## Generate From Image And Prompt
+
+```bash
+python run_single.py \
+  --image_path /path/to/input.png \
+  --prompt "a ball rolls down the ramp and hits the block" \
+  --api_key YOUR_DASHSCOPE_API_KEY
+```
+
+By default this creates:
+
+- `cases/<case_name>/input.png`
+- `cases/<case_name>/config.yaml`
+- `simulation/case_simulation/<case_name>.py`
+- `runs/<case_name>/<timestamp>/...`
+
+Use a custom case name when needed:
+
+```bash
+python run_single.py \
+  --image_path /path/to/input.png \
+  --prompt "three oranges move on a conveyor belt" \
+  --case_name three_oranges_demo \
+  --api_key YOUR_DASHSCOPE_API_KEY
+```
+
+## Simulate From Existing Config
+
+If you already have a config, the agent is skipped:
+
+```bash
+python run_single.py \
+  --mode simulate \
+  --image_path /path/to/input.png \
+  --config_path /path/to/config.yaml \
+  --handler_path /path/to/handler.py
+```
+
+`--handler_path` is optional if the matching handler already exists under
+`simulation/case_simulation/<example_name>.py`.
+
+Short simulation is the default. For full simulation:
+
+```bash
+python run_single.py \
+  --mode simulate \
+  --image_path /path/to/input.png \
+  --config_path /path/to/config.yaml \
+  --simulation_mode full
+```
+
+## Auto Mode
+
+`run_single.py` defaults to `--mode auto`:
+
+- if `--config_path` is provided, it simulates directly;
+- else if `cases/<case_name>/config.yaml` already exists, it simulates directly;
+- otherwise it runs the multi-agent generation loop and requires `--api_key`.
+
+## API Key
+
+The API key is not stored in code. Pass it explicitly with `--api_key` whenever
+the agent is used.

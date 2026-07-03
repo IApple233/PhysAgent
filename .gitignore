@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+
+# Runtime inputs, generated configs, handlers, logs, and videos.
+cases/*/
+runs/
+result/
+debug/
+
+# Large local model/checkpoint folders.
+checkpoints/
+ckpts/
+wan_models/
+submodules/sam2/
+submodules/sam_3d_objects/
+submodules/Genesis/
+
+# Common local files.
+.env
+.DS_Store
