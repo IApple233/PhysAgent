@@ -193,6 +193,14 @@
       padding: 4px 2px 10px;
     }
 
+    .selector-strip.more-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 120px);
+      grid-auto-rows: 90px;
+      justify-content: center;
+      width: max-content;
+    }
+
     .case-thumb {
       width: 120px;
       aspect-ratio: 4 / 3;
@@ -631,6 +639,10 @@
       .iteration-grid, .comparison-grid, .gallery-grid, .event-grid { grid-template-columns: 1fr; }
       .comparison-grid .compact { grid-column: auto; }
       .case-thumb { width: 96px; }
+      .selector-strip.more-selector-grid {
+        grid-template-columns: repeat(5, 96px);
+        grid-auto-rows: 72px;
+      }
       .method-row .seg-button { min-width: 0; flex: 1 1 130px; }
       .top-nav div { padding-inline: 16px; }
     }
@@ -676,7 +688,7 @@
     </div>
     
       <div class="interactive-section">
-        <div class="selector-strip">
+        <div class="selector-strip more-selector-grid">
             <button class="case-thumb is-active" data-target="iterations" data-case="0" type="button" aria-label="Select Ball (case_003)">
               <img src="matched_images/chapter2_ball_case_003.png?v=1780559796" alt="Ball (case_003)" loading="lazy" class="thumb-image">
             </button>
@@ -1210,6 +1222,22 @@
             <button class="case-thumb" data-target="more-results" data-case="5" type="button" aria-label="Select Umbrella (case_072)">
               <img src="matched_images/chapter4_umbrella_case_072.png?v=1781847000" alt="Umbrella (case_072)" loading="lazy" class="thumb-image">
             </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="6" type="button" aria-label="Select Car (new)">
+              <img src="matched_images/chapter4_car_new.png?v=1783670400" alt="Car (new)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="7" type="button" aria-label="Select Cube (new)">
+              <img src="matched_images/chapter4_cube_new.png?v=1783670400" alt="Cube (new)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="8" type="button" aria-label="Select Football (new)">
+              <img src="matched_images/chapter4_football_new.png?v=1783670400" alt="Football (new)" loading="lazy" class="thumb-image">
+            </button>
+            
+            <button class="case-thumb" data-target="more-results" data-case="9" type="button" aria-label="Select Kite (new)">
+              <img src="matched_images/chapter4_kite_new.png?v=1783670400" alt="Kite (new)" loading="lazy" class="thumb-image">
+            </button>
             </div>
         
     <article class="selectable-case-panel more-panel is-active" data-target="more-results" data-case="0">
@@ -1309,6 +1337,70 @@
               <div class="media-label">Event 2</div>
               <video src="processed_videos/chapter4_case8_event2.mp4?v=1782455187" class="" muted loop playsinline controls preload="metadata"></video>
               <div class="event-prompt"><p class="prompt-text">An umbrella is blown by the wind on an open road; instead of flying high, it <mark class="prompt-highlight">tumbles backward along the road surface</mark>.</p></div>
+            </article>
+            </div>
+    </article>
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="6">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="car1.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: car event 1. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="car2.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: car event 2. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            </div>
+    </article>
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="7">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="cube1.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: cube event 1. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="cube2.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: cube event 2. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            </div>
+    </article>
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="8">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="football1.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: football event 1. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="football2.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: football event 2. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            </div>
+    </article>
+
+    <article class="selectable-case-panel more-panel" data-target="more-results" data-case="9">
+      <div class="event-grid">
+            <article class="media-card">
+              <div class="media-label">Event 1</div>
+              <video src="kite1.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: kite event 1. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
+            </article>
+            
+            <article class="media-card">
+              <div class="media-label">Event 2</div>
+              <video src="kite2.mp4?v=1783670400" class="" muted loop playsinline controls preload="metadata"></video>
+              <!-- TODO prompt: kite event 2. Add <div class="event-prompt"><p class="prompt-text">...</p></div> here. -->
             </article>
             </div>
     </article>
