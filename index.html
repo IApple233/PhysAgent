@@ -201,6 +201,14 @@
       width: max-content;
     }
 
+    .selector-strip.iteration-selector-row {
+      display: grid;
+      grid-template-columns: repeat(6, 120px);
+      grid-auto-rows: 90px;
+      justify-content: center;
+      width: max-content;
+    }
+
     .case-thumb {
       width: 120px;
       aspect-ratio: 4 / 3;
@@ -643,6 +651,10 @@
         grid-template-columns: repeat(5, 96px);
         grid-auto-rows: 72px;
       }
+      .selector-strip.iteration-selector-row {
+        grid-template-columns: repeat(6, 96px);
+        grid-auto-rows: 72px;
+      }
       .method-row .seg-button { min-width: 0; flex: 1 1 130px; }
       .top-nav div { padding-inline: 16px; }
     }
@@ -688,7 +700,7 @@
     </div>
     
       <div class="interactive-section">
-        <div class="selector-strip more-selector-grid">
+        <div class="selector-strip iteration-selector-row">
             <button class="case-thumb is-active" data-target="iterations" data-case="0" type="button" aria-label="Select Ball (case_003)">
               <img src="matched_images/chapter2_ball_case_003.png?v=1780559796" alt="Ball (case_003)" loading="lazy" class="thumb-image">
             </button>
@@ -1066,7 +1078,7 @@
             </div>
             
             <div class="baseline-method-panel" data-method="2">
-              <video src="processed_videos/chapter3_case5_baseline2.mp4?v=1782455178" class="" muted loop playsinline controls preload="metadata"></video>
+              <video src="processed_videos/chapter3_case5_baseline2.mp4?v=1783687200" class="" muted loop playsinline controls preload="metadata"></video>
             </div>
             </div>
         </div>
