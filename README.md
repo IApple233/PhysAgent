@@ -36,7 +36,7 @@ outputs, historical result folders, and heavy model files.
 - `cases/caption_force.py`: shared DashScope/VLM generation utilities.
 - `cases/*_rule.md`: generation, evaluation, and reflection prompts.
 - `case_simulation.py` and `simulation/`: reconstruction and simulation runtime.
-- `vidgen/`, `wan/`, and `submodules/flux_controlnet_inpainting/`: lightweight code dependencies used by the runtime.
+- `vidgen/` and `wan/`: lightweight video-generation runtime code.
 
 Large external dependencies such as SAM2, SAM3D Objects, Genesis, checkpoints,
 and model weights are intentionally not copied into this folder. Install or link
@@ -96,9 +96,9 @@ conda activate realwonder
 
 ### 2. Prepare External Submodules
 
-This release folder keeps only the lightweight
-`submodules/flux_controlnet_inpainting` code. Clone or symlink the other
-external repositories into these exact paths:
+This release folder keeps only lightweight project runtime code. Clone or
+symlink the external reconstruction and simulation repositories into these
+exact paths:
 
 ```bash
 mkdir -p submodules
@@ -234,8 +234,7 @@ python run_single.py \
 
 ## Packaged Examples
 
-This release includes six lightweight benchmark examples under
-`examples/default_cases/`:
+This release includes six lightweight examples under `examples/`:
 
 - `toy_car_acrylic_ramp_event1`
 - `pumpkin_fall_pumpkin_splats_stool_intact`

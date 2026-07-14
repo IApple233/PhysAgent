@@ -12,7 +12,6 @@ os.environ.setdefault("SETUPTOOLS_USE_DISTUTILS", "stdlib")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SUBMODULE_PATHS = [
     REPO_ROOT,
-    REPO_ROOT / "submodules" / "flux_controlnet_inpainting",
 ]
 for path in SUBMODULE_PATHS:
     if path.exists() and str(path) not in sys.path:

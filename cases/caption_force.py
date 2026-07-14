@@ -16,8 +16,7 @@ from PIL import Image
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-FLUX_INPAINTING_PATH = REPO_ROOT / "submodules" / "flux_controlnet_inpainting"
-for path in [REPO_ROOT, SCRIPT_DIR, FLUX_INPAINTING_PATH]:
+for path in [REPO_ROOT, SCRIPT_DIR]:
     if path.exists() and str(path) not in sys.path:
         sys.path.insert(0, str(path))
 DEFAULT_BASE_URL = "https://dashscope.aliyuncs.com/api/v1"
@@ -57,7 +56,7 @@ def parse_args():
     parser.add_argument("--case_name", help="Override the case name derived from the image folder.")
     parser.add_argument(
         "--config_output",
-        default="config2.yaml",
+        default="config.yaml",
         help="Config filename to write inside the case folder.",
     )
     parser.add_argument(

@@ -17,7 +17,7 @@ class BenchmarkCase:
     case_name: str
     image_path: Path
     prompt: str
-    default_config_path: Path | None
+    packaged_config_path: Path | None
 
 
 def repo_root() -> Path:
@@ -30,13 +30,13 @@ def time_run_id() -> str:
 
 def parse_args() -> argparse.Namespace:
     root = repo_root()
-    default_case_json = root / "examples" / "default_cases" / "cases.json"
-    default_output_root = root / "runs" / "default_cases" / time_run_id()
+    default_case_json = root / "examples" / "cases.json"
+    default_output_root = root / "runs" / "examples" / time_run_id()
 
     parser = argparse.ArgumentParser(
         description=(
             "Run the packaged PhysAgent examples. Cases with a "
-            "default config are simulated directly; otherwise run_single.py "
+            "packaged config are simulated directly; otherwise run_single.py "
             "falls back to agent generation."
         )
     )
@@ -70,8 +70,8 @@ def load_cases(case_json: Path) -> list[BenchmarkCase]:
     cases = []
     for item in items:
         image_path = resolve_path(item["image"], case_json.parent)
-        default_config = item.get("default_config")
-        default_config_path = resolve_path(default_config, case_json.parent) if default_config else None
+        packaged_config = item.get("config")
+        packaged_config_path = resolve_path(packaged_config, case_json.parent) if packaged_config else None
         prompt = item.get("prompt_en") or item.get("prompt_cn") or item.get("prompt") or ""
         cases.append(
             BenchmarkCase(
@@ -79,17 +79,17 @@ def load_cases(case_json: Path) -> list[BenchmarkCase]:
                 case_name=item["case_name"],
                 image_path=image_path,
                 prompt=prompt.replace("\n", " "),
-                default_config_path=default_config_path,
+                packaged_config_path=packaged_config_path,
             )
         )
     return cases
 
 
 def build_command(args: argparse.Namespace, case: BenchmarkCase) -> list[str]:
-    use_default_config = (
+    use_packaged_config = (
         not args.regenerate_configs
-        and case.default_config_path is not None
-        and case.default_config_path.exists()
+        and case.packaged_config_path is not None
+        and case.packaged_config_path.exists()
     )
 
     command = [
@@ -113,8 +113,8 @@ def build_command(args: argparse.Namespace, case: BenchmarkCase) -> list[str]:
         args.base_url,
     ]
 
-    if use_default_config:
-        command.extend(["--mode", "simulate", "--config_path", str(case.default_config_path)])
+    if use_packaged_config:
+        command.extend(["--mode", "simulate", "--config_path", str(case.packaged_config_path)])
         return command
 
     if not args.api_key:
@@ -135,9 +135,9 @@ def run_case(args: argparse.Namespace, case: BenchmarkCase) -> bool:
     print(f"{case.case_id}: {case.case_name}")
     print(f"Image: {case.image_path}")
     if "--config_path" in command:
-        print(f"Default config: {case.default_config_path}")
+        print(f"Packaged config: {case.packaged_config_path}")
     else:
-        print("Default config: not used")
+        print("Packaged config: not used")
     print(f"Prompt: {case.prompt}")
     print("Running:", " ".join(command), flush=True)
     return subprocess.run(command, cwd=repo_root()).returncode == 0

@@ -1,140 +1,101 @@
 import torch
-from diffusers.utils import load_image, check_min_version
-from diffusers import DiffusionPipeline, DDIMScheduler
-import torchvision.transforms.functional as TF
 import torch.nn.functional as F
-from submodules.flux_controlnet_inpainting.controlnet_flux import FluxControlNetModel
-from submodules.flux_controlnet_inpainting.transformer_flux import FluxTransformer2DModel
-from submodules.flux_controlnet_inpainting.pipeline_flux_controlnet_inpaint import FluxControlNetInpaintingPipeline
-from torchvision.transforms import ToPILImage
-from torchvision.transforms.functional import to_tensor, gaussian_blur
-import numpy as np
+from diffusers import AutoPipelineForInpainting
+from diffusers.utils import check_min_version
 from PIL import Image
-from torchvision.transforms import ToTensor
-import cv2
-from simulation.utils import dilate_binary_mask, smooth_segmentation_mask_255
-import sys
-import os
-sys.path.append(os.path.abspath("submodules/flux_controlnet_inpainting"))
+from torchvision.transforms.functional import gaussian_blur, to_pil_image
+
 
 check_min_version("0.30.2")
 
+
 class FluxInpainter:
-    # def __init__(self, device="cuda", torch_dtype=torch.bfloat16):
-    def __init__(self, device="cuda", torch_dtype=torch.float16):
+    def __init__(
+        self,
+        device="cuda",
+        torch_dtype=torch.float16,
+        model_name="diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+    ):
         self.device = device
-        self.torch_dtype = torch_dtype
+        self.torch_dtype = torch.float32 if device == "cpu" else torch_dtype
+        self.model_name = model_name
         self.pipe = None
         self.load_model()
-        # self.load_model_attneraser()
-        
+
     def load_model(self):
-        """Load the FLUX ControlNet inpainting model and pipeline"""
-        # Load ControlNet
-        # controlnet = FluxControlNetModel.from_pretrained(
-        #     "alimama-creative/FLUX.1-dev-Controlnet-Inpainting-Beta", 
-        #     torch_dtype=self.torch_dtype
-        # )
-        
-        # # Load Transformer
-        # transformer = FluxTransformer2DModel.from_pretrained(
-        #     "black-forest-labs/FLUX.1-dev", 
-        #     subfolder='transformer', 
-        #     torch_dtype=self.torch_dtype
-        # )
-        
-        # # Build pipeline
-        # self.pipe = FluxControlNetInpaintingPipeline.from_pretrained(
-        #     "black-forest-labs/FLUX.1-dev",
-        #     controlnet=controlnet,
-        #     transformer=transformer,
-        #     torch_dtype=self.torch_dtype
-        # ).to(self.device)
-        
-        scheduler = DDIMScheduler(
-            beta_start=0.00085, 
-            beta_end=0.012, 
-            beta_schedule="scaled_linear", 
-            clip_sample=False, 
-            set_alpha_to_one=False
-        )
-        
-        self.pipe = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            custom_pipeline="/home/huteng/lliqirui/AttentionEraser/pipeline_stable_diffusion_xl_attentive_eraser.py",
-            scheduler=scheduler,
-            variant="fp16",
-            use_safetensors=True,
+        """Load the inpainting pipeline from Hugging Face cache or download it."""
+        self.pipe = AutoPipelineForInpainting.from_pretrained(
+            self.model_name,
             torch_dtype=self.torch_dtype,
+            variant="fp16" if self.torch_dtype == torch.float16 else None,
+            use_safetensors=True,
         ).to(self.device)
-        
-        # Ensure components are in correct dtype
-        # self.pipe.transformer.to(self.torch_dtype)
-        # self.pipe.controlnet.to(self.torch_dtype)
-        
-        print("Model loaded successfully")
-        
-    def __call__(self, image, mask, prompt="", size=(512, 512), 
-                      num_inference_steps=24, controlnet_conditioning_scale=0.9,
-                      guidance_scale=3.5, negative_prompt="", true_guidance_scale=3.5,
-                      seed=42):
-        """Run inpainting with the given parameters"""
+        print(f"Inpainting model loaded: {self.model_name}")
+
+    def _image_to_pil(self, image, size):
+        if isinstance(image, Image.Image):
+            return image.convert("RGB").resize(size, Image.LANCZOS)
+
+        if not torch.is_tensor(image):
+            raise TypeError(f"Unsupported image type: {type(image).__name__}")
+
+        image = image.detach().cpu().float()
+        if image.dim() == 4:
+            image = image[0]
+        if image.dim() == 2:
+            image = image.unsqueeze(0).expand(3, -1, -1)
+        if image.shape[0] == 1:
+            image = image.expand(3, -1, -1)
+        image = image[:3].clamp(0, 1)
+        return to_pil_image(image).resize(size, Image.LANCZOS)
+
+    def _mask_to_pil(self, mask, size):
+        if isinstance(mask, Image.Image):
+            return mask.convert("L").resize(size, Image.LANCZOS)
+
+        if not torch.is_tensor(mask):
+            raise TypeError(f"Unsupported mask type: {type(mask).__name__}")
+
+        mask = mask.detach().cpu().float()
+        if mask.dim() == 4:
+            mask = mask[0]
+        if mask.dim() == 3:
+            mask = mask[:1]
+        elif mask.dim() == 2:
+            mask = mask.unsqueeze(0)
+        mask = F.interpolate(mask.unsqueeze(0), size=size[::-1], mode="bilinear", align_corners=False)
+        mask = gaussian_blur(mask, kernel_size=(77, 77))
+        mask = (mask[0, 0] > 0.1).float()
+        return to_pil_image(mask).convert("L")
+
+    def __call__(
+        self,
+        image,
+        mask,
+        prompt="",
+        size=(512, 512),
+        num_inference_steps=24,
+        controlnet_conditioning_scale=0.9,
+        guidance_scale=3.5,
+        negative_prompt="",
+        true_guidance_scale=3.5,
+        seed=42,
+    ):
+        """Run inpainting with the packaged diffusers pipeline."""
         if self.pipe is None:
             raise ValueError("Model not loaded. Please call load_model() first.")
 
-        def preprocess_image(image, device):
-            # Ensure image is 4D: (N, C, H, W)
-            if image.dim() == 3:  # (C, H, W)
-                image = image.unsqueeze(0)
-            elif image.dim() == 2:  # (H, W) grayscale
-                image = image.unsqueeze(0).unsqueeze(0).expand(-1, 3, -1, -1)
-            # Now image is 4D
-            image = image.float() * 2 - 1  # [0,1] --> [-1,1]
-            if image.shape[1] != 3:
-                image = image.expand(-1, 3, -1, -1)
-            image = F.interpolate(image, (1024, 1024))
-            image = image.to(self.torch_dtype).to(device)
-            return image
-
-        def preprocess_mask(mask, device):
-            # Ensure mask is 4D: (N, C, H, W)
-            if mask.dim() == 2:  # (H, W)
-                mask = mask.unsqueeze(0).unsqueeze(0)
-            elif mask.dim() == 3:  # (C, H, W) or (1, H, W)
-                mask = mask.unsqueeze(0)
-            # Now mask is 4D
-            mask = mask.float()  # 0 or 1
-            mask = F.interpolate(mask, (1024, 1024))
-            mask = gaussian_blur(mask, kernel_size=(77, 77))
-            mask[mask < 0.1] = 0
-            mask[mask >= 0.1] = 1
-            mask = mask.to(self.torch_dtype).to(device)
-            return mask
-
-
+        image_pil = self._image_to_pil(image, size)
+        mask_pil = self._mask_to_pil(mask, size)
         generator = torch.Generator(device=self.device).manual_seed(seed)
-        image = preprocess_image(image, self.device)
-        mask = preprocess_mask(mask, self.device)
 
         result = self.pipe(
-            prompt="", # Attentive Eraser 不需要 prompt 即可工作
-            image=image,
-            mask_image=mask,
-            height=1024,
-            width=1024,
-            AAS=True, 
-            strength=0.8, 
-            rm_guidance_scale=9, 
-            ss_steps=9, 
-            ss_scale=0.3, 
-            AAS_start_step=0, 
-            AAS_start_layer=34, 
-            AAS_end_layer=70, 
-            num_inference_steps=50, 
+            prompt=prompt or "clean realistic background",
+            image=image_pil,
+            mask_image=mask_pil,
+            negative_prompt=negative_prompt,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             generator=generator,
-            guidance_scale=1,
-        ).images[0]  # Returns PIL Image
-        # Resize to expected size if needed
-        print(f'size: {size[0],size[1]}')
-        result = result.resize((size[0], size[1]), Image.LANCZOS)
-        return result
+        ).images[0]
+        return result.resize(size, Image.LANCZOS)

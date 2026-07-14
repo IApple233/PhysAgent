@@ -11,8 +11,7 @@ import yaml
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
-FLUX_INPAINTING_PATH = REPO_ROOT / "submodules" / "flux_controlnet_inpainting"
-for path in [REPO_ROOT, SCRIPT_DIR, FLUX_INPAINTING_PATH]:
+for path in [REPO_ROOT, SCRIPT_DIR]:
     if path.exists() and str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
@@ -42,7 +41,7 @@ def parse_args():
     parser.add_argument("--image_path", required=True)
     parser.add_argument("--prompt", required=True)
     parser.add_argument("--case_name")
-    parser.add_argument("--config_output", default="config2.yaml")
+    parser.add_argument("--config_output", default="config.yaml")
     parser.add_argument("--force_output")
     parser.add_argument("--model", default="qwen3.6-plus")
     parser.add_argument("--artifacts_dir")
@@ -347,7 +346,6 @@ def run_subprocess(cmd):
     pythonpath_parts = [
         str(REPO_ROOT),
         str(SCRIPT_DIR),
-        str(FLUX_INPAINTING_PATH),
     ]
     if env.get("PYTHONPATH"):
         pythonpath_parts.append(env["PYTHONPATH"])
