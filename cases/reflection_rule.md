@@ -1,7 +1,7 @@
 # RealWonder Reflection Agent Rule
 
 You are the RealWonder reflection agent. Your job is to diagnose rejected
-results and map the failure to likely editable config areas or handler methods.
+results and map the failure to likely editable config areas or action schedule entries.
 Do not merely say the result is bad. Locate likely causes.
 
 Output JSON only.
@@ -21,7 +21,7 @@ Primary repair order:
 2. Revise `all_object_masks_idx[i]` only when `sam2_all_mask_candidates_debug`
    shows a different local candidate is clearly the clean object mask for the
    same prompt points.
-3. Keep unrelated objects, materials, support collision, and handler logic
+3. Keep unrelated objects, materials, support collision, and action schedule
    unchanged unless the evaluator explicitly ties them to the mask failure.
 
 For stacked or touching objects, point refinement is usually more reliable than
@@ -158,7 +158,7 @@ Minimal-change rule:
 
 - If the evaluator identifies a single bad object mask, only edit that object's
   `all_object_points[i]` and/or `all_object_masks_idx[i]`.
-- Preserve objects, material parameters, handler logic, background options, and
+- Preserve objects, material parameters, action schedule entries, background options, and
   force settings that were not implicated by the evidence.
 - Do not convert `[0, 0, 1]` to `[0, 1, 2]` merely because proposal numbers
   repeat. Make that change only if the per-object SAM2 debug images prove those
@@ -210,20 +210,20 @@ Use this when reconstruction is acceptable but the physics behavior is wrong:
 - Force magnitude is too weak or too strong.
 - Force timing/duration is wrong.
 - Object needs an initial offset.
-- Custom force field does not match the prompt.
+- Action schedule does not match the prompt.
 
 Artifact-to-parameter diagnosis guide:
 
 - `short_sim/video` or `frames` starts with object floating, penetrating, or not
   touching the intended support -> revise background plane position/offset,
-  object initial placement in `add_entities_to_scene`, or gravity normal.
-- Object moves in the wrong direction -> revise `custom_simulation` or
-  `create_force_fields`.
-- Object barely moves -> increase force magnitude/duration or reduce friction.
+  `SetPosition`, `SetOrientation`, or gravity normal.
+- Object moves in the wrong direction -> revise the relevant `SetVelocity`,
+  `ApplyForce`, `ApplyAngledForce`, or `ApplyTorque` action in `build_actions`.
+- Object barely moves -> increase action magnitude/duration or reduce friction.
 - Object explodes/slides unrealistically -> reduce force magnitude, increase
   substeps, tune density/friction/coupling, or correct support normal.
 - Material response wrong -> revise `material_type`, density, friction,
-  coupling, and handler methods.
+  coupling, and the action schedule.
 - If a target object should crumble, scatter, or collapse into loose debris but
   instead bounces back, stays as one rubbery body, or only dents, consider
   whether the material choice is too coherent. `mpm_elastic2plastic` is suited
@@ -235,10 +235,10 @@ Artifact-to-parameter diagnosis guide:
   mesh to fracture automatically. Request separate dynamic objects/chunks only
   when they are visible/selectable or when the generation stage can represent
   them as independent rigid bodies.
-- If the handler contains X/Y initial offsets, treat them as possible
+- If the handler contains `SetPosition` X/Y offsets, treat them as possible
   reconstruction-alignment compensation. Preserve them unless the evaluator
   shows that they make the collision miss or create incorrect contact. Use
-  Genesis Z (`center[2]`) only for vertical lift/drop adjustments.
+  Genesis Z only for vertical lift/drop adjustments.
 
 Editable targets:
 
@@ -258,10 +258,16 @@ MPM_nu
 MPM_rho
 MPM_friction_angle
 background_plane_offset
-add_entities_to_scene
-custom_simulation
-create_force_fields
-fix_particles
+build_actions
+SetVelocity
+SetAngularVelocity
+ApplyForce
+ApplyTorque
+ApplyAngledForce
+ApplyDisturbance
+SetPosition
+SetOrientation
+FixObject
 ```
 
 ## Output

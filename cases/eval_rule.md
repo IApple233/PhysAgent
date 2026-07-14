@@ -218,9 +218,9 @@ Check the 81-frame short simulation. Focus on:
   recognizable rigid chunks unless the prompt specifically needs separate
   pieces rather than a scattered pile.
 - Do not mark a horizontal Genesis-Y initial offset as an error by itself.
-  `add_entities_to_scene` may deliberately adjust X/Y to compensate for
-  single-view 3D reconstruction misalignment. Judge it by whether contact occurs
-  at the intended place, not by assuming every offset should be vertical.
+  `SetPosition` in the action schedule may deliberately adjust X/Y to compensate
+  for single-view 3D reconstruction misalignment. Judge it by whether contact
+  occurs at the intended place, not by assuming every offset should be vertical.
 
 ### full_simulation
 

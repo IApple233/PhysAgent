@@ -1,0 +1,60 @@
+{
+  "source": "packaged PhysAgent default examples",
+  "count": 6,
+  "items": [
+    {
+      "case_id": "case_067",
+      "case_name": "toy_car_acrylic_ramp_event1",
+      "short_name": "car",
+      "image": "toy_car_acrylic_ramp_event1/input.png",
+      "prompt_cn": "红色玩具车缓慢沿透明斜坡下滑，但由于摩擦在斜坡尾段停住，没有到达水平桌面。",
+      "prompt_en": "A red toy car slowly slides down the transparent ramp, but friction makes it stop near the lower end of the ramp before reaching the flat tabletop.",
+      "default_config": "toy_car_acrylic_ramp_event1/config.yaml"
+    },
+    {
+      "case_id": "case_047",
+      "case_name": "pumpkin_fall_pumpkin_splats_stool_intact",
+      "short_name": "pumpkin",
+      "image": "pumpkin_fall_pumpkin_splats_stool_intact/input.png",
+      "prompt_cn": "一个巨大的南瓜悬在小木凳正上方后竖直下落，重重砸到木凳上并把木凳压坏。",
+      "prompt_en": "A huge pumpkin hangs directly above a small wooden stool, falls vertically, lands heavily on it, and crushes the stool.",
+      "default_config": "pumpkin_fall_pumpkin_splats_stool_intact/config.yaml"
+    },
+    {
+      "case_id": "case_041",
+      "case_name": "nailong_ring_half_hangs_on_body",
+      "short_name": "nailong",
+      "image": "nailong_ring_half_hangs_on_body/input.png",
+      "prompt_cn": "一个黄色玩偶站在木桌上，蓝色圆环从上方下降但没有完全套中，只是一半挂在玩偶身体上并倾斜停住。",
+      "prompt_en": "A yellow toy stands on a wooden table; a blue ring descends from above but does not fully loop around it, instead getting half caught on the toy body and stopping at an angle.",
+      "default_config": "nailong_ring_half_hangs_on_body/config.yaml"
+    },
+    {
+      "case_id": "case_059",
+      "case_name": "three_oranges_conveyor_event1",
+      "short_name": "orange",
+      "image": "three_oranges_conveyor_event1/input.png",
+      "prompt_cn": "两个橙子从输送带末端滑落，掉到地面后撞到下方原本静止的第三个橙子，使第三个橙子向前滚动。",
+      "prompt_en": "Two oranges slide off the end of a conveyor belt, fall to the floor, collide with a third orange that was resting below, and push it forward.",
+      "default_config": "three_oranges_conveyor_event1/config.yaml"
+    },
+    {
+      "case_id": "case_049",
+      "case_name": "scooter_collide",
+      "short_name": "scooter",
+      "image": "scooter_collide/input.png",
+      "prompt_cn": "一辆滑板车沿地面向垃圾桶滚去，撞上垃圾桶后自己失去平衡倒下，垃圾桶也被撞倒。",
+      "prompt_en": "A scooter rolls across the ground toward a trash can, hits it, loses balance and falls over, while the trash can is also knocked down.",
+      "default_config": "scooter_collide/config.yaml"
+    },
+    {
+      "case_id": "case_062",
+      "case_name": "foam_block_acrylic_ramp",
+      "short_name": "foam_block",
+      "image": "foam_block_acrylic_ramp/input.png",
+      "prompt_cn": "一个白色泡沫块位于透明斜坡上方，在空气中轻轻飘下，缓慢接近斜坡表面。",
+      "prompt_en": "A white foam block is above a transparent ramp and gently floats downward through the air, slowly approaching the ramp surface.",
+      "default_config": "foam_block_acrylic_ramp/config.yaml"
+    }
+  ]
+}

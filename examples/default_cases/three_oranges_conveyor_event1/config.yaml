@@ -1,0 +1,92 @@
+device: cuda
+seed: 0
+example_name: three_oranges_conveyor_event1
+output_folder: result/three_oranges_conveyor_event1
+data_path: cases/three_oranges_conveyor_event1/
+segmenter: sam2
+all_object_points:
+- - - 150
+    - 205
+    - 1
+- - - 325
+    - 205
+    - 1
+- - - 635
+    - 330
+    - 1
+all_object_masks_idx:
+- 0
+- 0
+- 0
+support_object_points:
+- - - 120
+    - 250
+    - 1
+  - - 420
+    - 250
+    - 1
+  - - 520
+    - 210
+    - 1
+support_object_masks_idx:
+- 0
+support_object_names:
+- conveyor_belt
+static_support_replaces_background_collision: true
+remove_support_from_background_inpainting: false
+force_regenerate_inpainted_with_support: false
+obj_kp_matching: true
+stitched_inpainting: false
+sequential_object_inpainting: false
+logging_level: details
+debug: true
+inpainting_negative_prompt: oranges, fruit
+inpainting_prompt: industrial conveyor belt, factory floor, white wall background
+mesh_resize_factor: 1.0
+original_geometry_downsample: false
+target_faces: 10000
+use_rgb_frontside: false
+use_primitive: false
+background_collision_mode: static_support
+background_plane_snap_degrees: 45
+background_plane_max_snap_angle_degrees: 30
+background_plane_position_mode: object_support
+background_plane_offset: 0.015
+static_support_clearance: 0.03
+static_support_patch_margin: 0.08
+static_support_resolution_passes: 4
+dt: 0.01
+substeps: 50
+simulated_frames_num: 81
+frame_steps: 1
+material_type:
+- rigid
+- rigid
+- rigid
+gravity: -9.8
+rigid_rho: 800.0
+rigid_friction: 0.35
+plane_friction: 0.55
+rigid_coup_friction: 1.0
+rigid_coup_softness: 0.002
+alpha_threshold: 0.9
+crop_start: 176
+fg_points_render_radius: 0.01
+genesis_camera_mode: match_input
+sync_svr_render_camera_to_genesis: true
+svr_render_camera_mode: genesis
+align_reconstruction_to_ground: true
+preserve_input_camera_after_world_alignment: true
+camera_pose_space: direct_gs
+num_output_frames: 21
+denoising_step_list:
+- 800
+- 600
+- 400
+- 200
+mask_dropin_step: -1
+vgen_prompt: The left orange drops from the conveyor first, bounces off the floor, and nudges
+  the lower orange forward. A moment later the second orange falls and rolls behind them.
+object_occlusion_aware_inpainting: false
+motion_reflection_config_preserved: true
+add_infinite_plane_with_static_support: true

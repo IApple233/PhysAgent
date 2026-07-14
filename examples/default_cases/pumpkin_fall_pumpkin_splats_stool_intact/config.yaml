@@ -1,0 +1,89 @@
+device: cuda
+seed: 0
+example_name: pumpkin_fall_pumpkin_splats_stool_intact
+output_folder: result/pumpkin_fall_pumpkin_splats_stool_intact
+data_path: cases/pumpkin_fall_pumpkin_splats_stool_intact/
+segmenter: sam2
+all_object_points:
+- - - 416
+    - 134
+    - 1
+  - - 416
+    - 168
+    - 1
+- - - 416
+    - 326
+    - 1
+  - - 416
+    - 346
+    - 1
+all_object_masks_idx:
+- 0
+- 0
+obj_kp_matching: true
+stitched_inpainting: false
+sequential_object_inpainting: false
+logging_level: details
+debug: true
+inpainting_negative_prompt: pumpkin, stool, wood, orange
+inpainting_prompt: white wall background, wooden floor
+mesh_resize_factor: 1.0
+original_geometry_downsample: false
+target_faces: 10000
+use_rgb_frontside: false
+use_primitive: false
+background_collision_mode: plane
+background_plane_snap_degrees: 45
+background_plane_max_snap_angle_degrees: 30
+background_plane_position_mode: object_support
+background_plane_offset: 0.025
+dt: 0.005
+substeps: 30
+simulated_frames_num: 81
+frame_steps: 1
+material_type:
+- mpm_sand
+- rigid
+gravity: -9.8
+particle_size: 0.015
+MPM_E: 200000.0
+MPM_nu: 0.2
+MPM_rho: 650.0
+MPM_friction_angle: 35
+rigid_rho: 1500.0
+rigid_friction: 0.8
+plane_friction: 0.8
+rigid_coup_friction: 1.0
+rigid_coup_softness: 0.015
+alpha_threshold: 0.99
+crop_start: 176
+fg_points_render_radius: 0.02
+genesis_camera_mode: match_input
+sync_svr_render_camera_to_genesis: true
+svr_render_camera_mode: genesis
+align_reconstruction_to_ground: true
+preserve_input_camera_after_world_alignment: true
+camera_pose_space: direct_gs
+num_output_frames: 21
+denoising_step_list:
+- 800
+- 600
+- 400
+- 200
+mask_dropin_step: -1
+vgen_prompt: A large orange pumpkin suspended in mid-air drops vertically onto a small
+  wooden stool. Upon impact, the pumpkin bursts and splatters, flattening into a wide,
+  mushy orange layer that spreads across the stool seat and drips onto the floor.
+  The wooden stool shakes and wobbles violently from the impact but remains upright
+  and intact. Static camera, realistic physics simulation, high detail.
+object_occlusion_aware_inpainting: false
+MPM_grid_density: 48
+force_front_view_ground_plane: true
+background_plane_normal_gs:
+- 0.0
+- 0.0
+- 1.0
+gravity_direction:
+- 0.0
+- 0.0
+- 1.0

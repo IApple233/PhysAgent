@@ -33,6 +33,11 @@ Identify the primary objects to be extracted.
   * **WHAT TO AVOID**: Do NOT select points near the object's edges, boundaries, or thin structures (e.g., a duck's neck, a chair leg, a person's fingers). Points in these areas often lead to poor segmentation.
   * **ACCURACY**: For complex objects, generate multiple points spread across the most robust parts of the object body. 
   * **Format**: `[[[x_0_to_1000, y_0_to_1000, label], [x2_0_to_1000, y2_0_to_1000, label]], [[x3_0_to_1000, y3_0_to_1000, label]]]` (label is 1 for foreground). The saved config will contain original-image pixel coordinates after scaling.
+* **`object_names`**: A list of short snake_case names for the dynamic objects,
+  in exactly the same order as `all_object_points`, `all_object_masks_idx`, and
+  `material_type`. These names are used by the high-level physics action handler
+  instead of raw object indices. Use descriptive names such as `["ball", "pin"]`,
+  `["scooter", "trash_can"]`, or `["left_orange", "middle_orange", "right_orange"]`.
 * **`all_object_masks_idx`**: Array selecting which SAM2 mask proposal to use per object. This is a per-object/local index into the multimask proposals produced for that object's own prompt points, not a global object id. Repeated values such as `[0, 0, 0]` are valid when proposal 0 is the cleanest mask for each object. Must match object count.
 * **Optional `support_object_points`**: Use for fixed support/collision scene
   objects that are not supposed to move but are important for contact, such as a
@@ -369,6 +374,7 @@ data_path: "cases/<inferred_name>/"
 
 segmenter: "sam2"
 all_object_points: [[[x1, y1, 1], [x2, y2, 1]], [[x3, y3, 1]]]
+object_names: ["<object_1_name>", "<object_2_name>"]
 all_object_masks_idx: [0, 0]
 
 obj_kp_matching: true
@@ -441,6 +447,7 @@ data_path: "cases/<inferred_name>/"
 
 segmenter: "sam2"
 all_object_points: [[[x1, y1, 1], [x2, y2, 1]], [[x3, y3, 1]]]
+object_names: ["<object_1_name>", "<object_2_name>"]
 all_object_masks_idx: [0, 0]
 support_object_points: [[[x_support, y_support, 1]]]
 support_object_masks_idx: [0]

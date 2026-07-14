@@ -42,6 +42,46 @@ Large external dependencies such as SAM2, SAM3D Objects, Genesis, checkpoints,
 and model weights are intentionally not copied into this folder. Install or link
 them following the original project environment before running the full pipeline.
 
+## Action API Generation Flow
+
+PhysAgent no longer asks the VLM to write raw Genesis control code for every
+case. The simulation control layer exposes reusable high-level actions under:
+
+- `simulation/case_simulation/action_handler.py`
+- `simulation/case_simulation/physics_actions.py`
+
+Generated handlers inherit from `ActionCaseHandler` and only define object names
+plus a `build_actions()` schedule. The available actions are:
+
+- `SetVelocity(name, velocity, frame)`
+- `SetAngularVelocity(name, angular_velocity, frame)`
+- `ApplyForce(name, force, point=None, duration=1, frame=0)`
+- `ApplyTorque(name, torque, duration=1, frame=0)`
+- `ApplyAngledForce(name, magnitude, angle, duration=1, frame=0)`
+- `ApplyDisturbance(name, model, amplitude, duration=1, frame=0)`
+- `SetPosition(name, position, frame=0)`
+- `SetOrientation(name, rotation, frame=0)`
+- `FixObject(name, duration, frame=0)`
+
+Example generated handler:
+
+```python
+from simulation.case_simulation.case_handler import register_case
+from simulation.case_simulation.action_handler import ActionCaseHandler
+from simulation.case_simulation.physics_actions import ApplyForce, SetVelocity
+
+
+@register_case("scooter_trash_can")
+class ScooterTrashCan(ActionCaseHandler):
+    object_names = ["scooter", "trash_can"]
+
+    def build_actions(self):
+        return [
+            SetVelocity("scooter", self.direction_to("trash_can", magnitude=3.0, horizontal=True), frame=0),
+            ApplyForce("scooter", self.direction_to("trash_can", magnitude=8.0, horizontal=True), duration=10, frame=0),
+        ]
+```
+
 ## Installation
 
 The environment follows the original RealWonder repository. The tested setup is
@@ -191,6 +231,35 @@ python run_single.py \
 - if `--config_path` is provided, it simulates directly;
 - else if `cases/<case_name>/config.yaml` already exists, it simulates directly;
 - otherwise it runs the multi-agent generation loop and requires `--api_key`.
+
+## Packaged Examples
+
+This release includes six lightweight benchmark examples under
+`examples/default_cases/`:
+
+- `toy_car_acrylic_ramp_event1`
+- `pumpkin_fall_pumpkin_splats_stool_intact`
+- `nailong_ring_half_hangs_on_body`
+- `three_oranges_conveyor_event1`
+- `scooter_collide`
+- `foam_block_acrylic_ramp`
+
+Run them with the packaged configs:
+
+```bash
+python scripts/run_examples.py \
+  --simulation-mode short_sim
+```
+
+Because these examples include `config.yaml`, the script skips agent generation
+and runs simulation directly. To ignore the packaged configs and regenerate them
+with the agent:
+
+```bash
+python scripts/run_examples.py \
+  --regenerate-configs \
+  --api-key YOUR_DASHSCOPE_API_KEY
+```
 
 ## API Key
 

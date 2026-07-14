@@ -569,7 +569,7 @@ def regenerate_from_reflection(
         stage_instruction = (
             "This feedback is from the pre-SAM3D mask gate. Revise segmentation keys "
             "first: all_object_points, then all_object_masks_idx. Preserve unrelated "
-            "physics, background, and handler logic unless the reflection explicitly "
+            "physics, background, and action schedule unless the reflection explicitly "
             "requires a change. You must treat the current all_object_points below as "
             "the failed coordinates and output a new complete YAML with corrected "
             "points. The failed coordinates below come from the saved runtime config "
@@ -590,8 +590,8 @@ def regenerate_from_reflection(
         stage_instruction = (
             "This feedback is from the simulation gate. Treat the accepted YAML mask, "
             "reconstruction, support, camera, and gravity parameters in the previous "
-            "config as the base version. Revise the Python handler first for force, "
-            "velocity, placement, and contact timing. "
+            "config as the base version. Revise the Python action schedule first for "
+            "velocity, force, torque, placement, and contact timing. "
             "Only minor scalar physics/contact YAML values may change; do not change "
             "segmentation points, mask indices, support points, camera mode, camera pose, "
             "or reconstruction settings."
@@ -618,7 +618,7 @@ def regenerate_from_reflection(
     feedback = (
         "The reflection agent diagnosed the previous result. Revise the outputs using this diagnosis. "
         f"{stage_instruction} "
-        "Output the full revised YAML followed by the full revised Python handler. "
+        "Output the full revised YAML followed by the full revised Python action handler. "
         "For simulation feedback, the YAML should be a minimal local patch over the "
         "current config shown below.\n\n"
         f"Reflection JSON:\n{json.dumps(reflection, indent=2, ensure_ascii=False)}"

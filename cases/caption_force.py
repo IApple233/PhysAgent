@@ -266,6 +266,18 @@ def validate_and_normalize_config(config_dict, case_name: str):
     if invalid_materials:
         raise ValueError(f"Unsupported material types: {invalid_materials}")
 
+    object_names = config_dict.get("object_names") or config_dict.get("all_object_names") or []
+    if isinstance(object_names, str):
+        object_names = [object_names]
+    if not isinstance(object_names, list):
+        object_names = []
+    object_names = [_normalize_object_name(name) for name in object_names]
+    if len(object_names) < len(all_object_points):
+        object_names = object_names + [f"object_{idx}" for idx in range(len(object_names), len(all_object_points))]
+    elif len(object_names) > len(all_object_points):
+        object_names = object_names[: len(all_object_points)]
+    config_dict["object_names"] = object_names
+
     for obj_idx, obj_points in enumerate(all_object_points):
         if not obj_points:
             raise ValueError(f"Object {obj_idx} has no prompt points.")
@@ -339,6 +351,12 @@ def validate_and_normalize_config(config_dict, case_name: str):
     return config_dict
 
 
+def _normalize_object_name(name):
+    name = str(name).strip().lower()
+    name = re.sub(r"[^a-z0-9]+", "_", name)
+    return name.strip("_") or "object"
+
+
 def normalize_handler_code(handler_code: str, case_name: str) -> str:
     if not handler_code.strip():
         raise ValueError("No python handler code was found in the model response.")
@@ -353,6 +371,20 @@ def normalize_handler_code(handler_code: str, case_name: str) -> str:
         handler_code,
         count=1,
     )
+    if "ActionCaseHandler" not in normalized_code:
+        raise ValueError("Generated handler must inherit from ActionCaseHandler.")
+    if "def build_actions" not in normalized_code:
+        raise ValueError("Generated handler must implement build_actions(self).")
+    forbidden_patterns = {
+        "def custom_simulation": "Do not override custom_simulation; return high-level actions from build_actions().",
+        "apply_links_external_force": "Use ApplyForce instead of raw Genesis force APIs.",
+        "apply_links_external_torque": "Use ApplyTorque instead of raw Genesis torque APIs.",
+        "set_dofs_velocity": "Use SetVelocity or SetAngularVelocity instead of raw DOF velocity APIs.",
+        "self.all_objs": "Use object names and packaged action APIs instead of direct self.all_objs indexing.",
+    }
+    for pattern, message in forbidden_patterns.items():
+        if pattern in normalized_code:
+            raise ValueError(message)
     compile(normalized_code, f"{case_name}.py", "exec")
     return normalized_code
 
@@ -422,7 +454,7 @@ def build_vlm_feedback_message(image_path: Path, video_path: Path, user_prompt: 
                     "Additional debug artifacts are attached below. They are chosen because they reflect config-controlled "
                     "intermediate results. Use them to decide whether to revise all_object_points, all_object_masks_idx, "
                     "obj_kp_matching, obj_kp, mesh_resize_factor, remap_depth, alpha_threshold, "
-                    "fg_points_render_radius, material_type, physics parameters, or the Python force handler."
+                    "fg_points_render_radius, material_type, physics parameters, or the Python action handler."
                 )
             }
         )
@@ -442,7 +474,7 @@ def build_vlm_feedback_message(image_path: Path, video_path: Path, user_prompt: 
             *debug_content,
             {
                 "text": (
-                    "The attached simulation video was produced from your previous YAML config and Python force handler. "
+                    "The attached simulation video was produced from your previous YAML config and Python action handler. "
                     "Compare the actual motion and the attached debug artifacts against the original prompt, diagnose what is wrong, and then revise both outputs. "
                     "Focus especially on whether segmentation points are inside the intended moving objects, whether the chosen SAM mask is correct, "
                     "whether object keypoint matching aligns the reconstructed mesh to the image, "
@@ -645,7 +677,7 @@ def build_manual_feedback_message(image_path: Path, user_prompt: str, manual_fee
             {"image": f"file://{image_path}"},
             {
                 "text": (
-                    "A human reviewed the simulation result from your previous YAML config and Python force handler and reported these issues:\n"
+                    "A human reviewed the simulation result from your previous YAML config and Python action handler and reported these issues:\n"
                     f"{manual_feedback}\n\n"
                     "Revise both outputs so the next simulation better matches the prompt. "
                     "If the problem may come from incorrect object prompt points after image resizing, you may also adjust all_object_points. "
