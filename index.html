@@ -99,6 +99,27 @@
       font-size: 15px;
     }
 
+    .authors .author-line,
+    .authors .affiliation-line {
+      display: block;
+    }
+
+    .authors .author-line {
+      color: #3f474f;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .authors .author-name {
+      display: inline-block;
+      margin: 0 12px 4px;
+    }
+
+    .authors .affiliation-line {
+      margin-top: 6px;
+      font-size: 15px;
+    }
+
     .link-row {
       display: flex;
       justify-content: center;
@@ -121,6 +142,12 @@
       border-color: var(--accent);
       background: var(--soft);
       color: var(--accent);
+    }
+
+    .pill-link.is-disabled {
+      cursor: default;
+      opacity: 0.55;
+      pointer-events: none;
     }
 
     .page-section {
@@ -672,9 +699,9 @@
       <p class="venue">Project Page</p>
       <h1>PhysAgent: Reflective Agentic Physics Control for Physically Plausible Video Generation</h1>
       <p class="subtitle">Reflection-iteration agents for controllable, physically plausible video generation.</p>
-      <p class="authors">Author One · Author Two · Author Three</p>
-      <div class="link-row"><a class="pill-link" href="#">Paper</a>
-<a class="pill-link" href="#">Code</a></div>
+      <p class="authors"><span class="author-line"><span class="author-name">Qirui Li<sup>1</sup></span><span class="author-name">Jinkun Hao<sup>1</sup></span><span class="author-name">Yibo Li<sup>1</sup></span><span class="author-name">Ran Yi<sup>1</sup></span><span class="author-name">Paul L. Rosin<sup>2</sup></span><span class="author-name">Yu-Kun Lai<sup>2</sup></span></span><span class="affiliation-line"><sup>1</sup>Shanghai Jiao Tong University · <sup>2</sup>Cardiff University</span></p>
+      <div class="link-row"><span class="pill-link is-disabled">Paper</span>
+<a class="pill-link" href="https://github.com/IApple233/PhysAgent">Code</a></div>
     </header>
     
 
@@ -1436,7 +1463,7 @@
     </div>
     
       <div class="method-figure">
-        <img src="pipeline.png?v=1782456838" alt="Method overview" loading="lazy" class="">
+        <iframe class="method-pdf" src="pipeline%20%2810%29.pdf#view=FitH" title="Method overview"></iframe>
       </div>
     </section>
     
